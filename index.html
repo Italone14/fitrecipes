@@ -778,7 +778,7 @@ async function generateRecipeAI(){
   statusEl.innerHTML='<i class="ti ti-loader spinning"></i> Sto creando la ricetta…';
   btn.disabled=true;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('https://muddy-block-6b3bfitrecipes-proxy.italo-beniamino-dolce.workers.dev',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,messages:[{role:'user',content:[
         {type:'text',text:`Sei un esperto di nutrizione. L'utente descrive una ricetta fitness in linguaggio naturale. Estrai una ricetta strutturata, stimando i valori nutrizionali per 100g di ogni ingrediente in base alla tua conoscenza nutrizionale (es. petto di pollo crudo ~165kcal/100g, riso basmati crudo ~360kcal/100g, ecc). Se l'utente specifica i grammi usali, altrimenti stima una quantità ragionevole per porzione.
@@ -844,7 +844,7 @@ async function handleScanUpload(e){
     document.getElementById('scan-result').style.display='none';
     document.getElementById('scan-apply').style.display='none';
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
+      const res=await fetch('https://muddy-block-6b3bfitrecipes-proxy.italo-beniamino-dolce.workers.dev',{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:mime,data:b64}},
