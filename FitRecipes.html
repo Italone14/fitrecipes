@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FitRecipes</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#16A87A;--green-dark:#0e7a58;--green-light:#E8F8F2;
+  --red:#E85D3F;--blue:#3B82F6;--amber:#F59E0B;
+  --bg:#F7F7F5;--card:#fff;--border:#EBEBEB;
+  --text:#111;--text2:#666;--text3:#AAA;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 2px 12px rgba(0,0,0,.06);
+  --shadow-md:0 4px 24px rgba(0,0,0,.1);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:580px;margin:0 auto;padding:20px 16px 40px}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#16A87A,#0e7a58);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 3px 10px rgba(22,168,122,.3)}
+.logo-text{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.logo-text span{color:var(--green)}
+.recipe-count{font-size:12px;color:var(--text3);background:var(--card);padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-weight:500}
+
+/* TABS */
+.tabs{display:flex;gap:3px;margin-bottom:24px;background:#EAEAE7;border-radius:13px;padding:4px}
+.tab{flex:1;padding:10px 6px;text-align:center;font-size:13px;font-weight:600;border:none;background:transparent;border-radius:10px;cursor:pointer;color:#999;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;letter-spacing:-.1px}
+.tab.active{background:#fff;color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.1)}
+.view{display:none}.view.active{display:block}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:18px}
+.search-input{width:100%;padding:12px 16px 12px 42px;font-size:15px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-family:inherit;transition:border-color .15s}
+.search-input:focus{outline:none;border-color:var(--green)}
+
+/* FILTERS */
+.filter-btns{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{padding:7px 15px;font-size:13px;font-weight:500;border-radius:20px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;color:var(--text2);white-space:nowrap;transition:all .15s;font-family:inherit}
+.filter-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* CAL FILTER */
+.cal-box{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px}
+.cal-box-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-box-top .label{font-size:13px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:6px}
+.cal-box-top .val{font-size:13px;font-weight:700;color:var(--green);background:var(--green-light);padding:3px 10px;border-radius:20px}
+.cal-slider-row{display:flex;align-items:center;gap:10px}
+.cal-slider-row input[type=range]{flex:1;accent-color:var(--green);height:4px;cursor:pointer}
+.cal-reset{background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;padding:6px 0 0;font-family:inherit;display:flex;align-items:center;gap:4px}
+.cal-reset:hover{color:var(--green)}
+.cal-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:#FEF3C7;color:#92400E;font-weight:600;margin-left:6px}
+
+/* RECIPE GRID */
+.recipes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(min-width:460px){.recipes-grid{grid-template-columns:repeat(3,1fr)}}
+.recipe-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
+.recipe-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.recipe-card:active{transform:scale(0.97)}
+.card-photo{width:100%;height:118px;background:linear-gradient(135deg,#f0f0ea,#e8e8e2);display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden}
+.card-photo img{width:100%;height:100%;object-fit:cover}
+.card-body{padding:10px 12px 12px}
+.card-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;letter-spacing:-.2px}
+.card-sub{font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:500}
+.macros{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.mpill{text-align:center;padding:5px 2px;border-radius:7px}
+.mpill .mv{font-size:11px;font-weight:700;display:block;letter-spacing:-.2px}
+.mpill .ml{font-size:9px;font-weight:600;opacity:.75}
+.p-cal{background:#FEF0ED;color:#C0391E}
+.p-pro{background:var(--green-light);color:#0e7a58}
+.p-car{background:#EFF6FF;color:#1D4ED8}
+.p-fat{background:#FFFBEB;color:#92400E}
+
+/* EMPTY */
+.empty{text-align:center;padding:52px 16px;grid-column:1/-1}
+.empty-icon{font-size:52px;display:block;margin-bottom:14px}
+.empty p{color:var(--text2);margin-bottom:18px;font-size:15px;font-weight:500}
+
+/* BUTTONS */
+.btn{padding:13px 22px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px;font-family:inherit;letter-spacing:-.2px;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.btn-green{background:linear-gradient(135deg,#16A87A,#0e7a58);color:#fff;box-shadow:0 3px 12px rgba(22,168,122,.25)}
+.btn-green:active{transform:scale(.97)}
+.btn-outline{background:var(--card);color:var(--text2);border:1.5px solid var(--border)}
+.btn-outline:active{background:var(--bg)}
+.btn-sm{padding:9px 16px;font-size:13px;border-radius:9px}
+.btn-icon{padding:9px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--text2);transition:all .15s}
+.btn-icon:hover{background:var(--border)}
+.btn-icon.danger:hover{background:#FEF0ED;color:var(--red);border-color:#FECACA}
+
+/* AI BOX */
+.ai-box{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:var(--radius);padding:20px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden}
+.ai-box::before{content:'';position:absolute;top:-40%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(124,58,237,.35),transparent 70%);pointer-events:none}
+.ai-box-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:6px;position:relative;z-index:1}
+.ai-box-title i{color:#A78BFA}
+.ai-box-sub{font-size:13px;color:rgba(255,255,255,.65);line-height:1.5;margin-bottom:14px;position:relative;z-index:1}
+.ai-input-wrap{position:relative;margin-bottom:10px;z-index:1}
+.ai-textarea{width:100%;padding:12px 50px 12px 14px;font-size:14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;resize:vertical;min-height:70px}
+.ai-textarea::placeholder{color:rgba(255,255,255,.4)}
+.ai-textarea:focus{outline:none;border-color:#A78BFA;background:rgba(255,255,255,.12)}
+.mic-btn{position:absolute;right:8px;bottom:8px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .2s}
+.mic-btn:hover{background:rgba(255,255,255,.2)}
+.mic-btn.recording{background:#E85D3F;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,93,63,.5)}50%{box-shadow:0 0 0 8px rgba(232,93,63,0)}}
+.ai-status{font-size:13px;color:#A78BFA;margin-bottom:10px;display:none;align-items:center;gap:7px;position:relative;z-index:1;font-weight:500}
+.btn-ai{background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;width:100%;justify-content:center;box-shadow:0 3px 14px rgba(124,58,237,.35);position:relative;z-index:1}
+.btn-ai:active{transform:scale(.98)}
+.btn-ai:disabled{opacity:.5;cursor:not-allowed}
+.or-divider{display:flex;align-items:center;text-align:center;margin:22px 0;color:var(--text3);font-size:12px;font-weight:600}
+.or-divider::before,.or-divider::after{content:'';flex:1;border-top:1.5px solid var(--border)}
+.or-divider span{padding:0 12px;text-transform:uppercase;letter-spacing:.05em}
+
+/* FORM */
+.form-block{margin-bottom:18px}
+.form-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:7px;display:block;letter-spacing:-.1px}
+.form-input{width:100%;padding:12px 14px;font-size:15px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-family:inherit;transition:border-color .15s;-webkit-appearance:none}
+.form-input:focus{outline:none;border-color:var(--green)}
+.form-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23AAA' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+textarea.form-input{resize:vertical;min-height:80px}
+.divider{border:none;border-top:1.5px solid var(--border);margin:22px 0}
+
+/* PHOTO */
+.photo-drop{border:2px dashed #D4D4CF;border-radius:var(--radius);padding:32px 16px;text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:all .15s;background:linear-gradient(135deg,#fafafa,#f5f5f2)}
+.photo-drop:hover,.photo-drop:focus-within{border-color:var(--green);background:var(--green-light)}
+.photo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-drop i{font-size:32px;color:var(--text3);display:block;margin-bottom:8px}
+.photo-drop p{font-size:14px;color:var(--text3);font-weight:500}
+.photo-preview{position:relative;border-radius:var(--radius);overflow:hidden;height:190px}
+.photo-preview img{width:100%;height:100%;object-fit:cover}
+.photo-remove{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;backdrop-filter:blur(4px)}
+
+/* INGREDIENT CARDS */
+.ing-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;position:relative;transition:box-shadow .15s}
+.ing-card:focus-within{box-shadow:0 0 0 3px rgba(22,168,122,.15);border-color:var(--green)}
+.ing-card-top{margin-bottom:12px}
+.ing-card-top input{width:100%;padding:11px 14px;font-size:15px;font-weight:600;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit}
+.ing-card-top input:focus{outline:none;border-color:var(--green);background:#fff}
+.ing-macros{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ing-field{display:flex;flex-direction:column;gap:5px}
+.ing-field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.ing-field input{padding:10px 12px;font-size:14px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);width:100%;font-family:inherit}
+.ing-field input:focus{outline:none;border-color:var(--green);background:#fff}
+.ing-remove{position:absolute;top:12px;right:12px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;color:var(--text3);font-size:15px;line-height:1;padding:5px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.ing-remove:hover{background:#FEF0ED;color:var(--red);border-color:#FECACA}
+.scan-btn{background:var(--green-light);color:var(--green);border:none;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;width:100%;justify-content:center;transition:background .15s}
+.scan-btn:active{background:#d0f0e6}
+.add-ing-btn{width:100%;padding:14px;border:2px dashed #D4D4CF;border-radius:var(--radius);background:transparent;color:var(--text3);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;font-family:inherit;transition:all .15s}
+.add-ing-btn:hover{border-color:var(--green);color:var(--green);background:var(--green-light)}
+
+/* MACRO PREVIEW */
+.macro-bar{background:linear-gradient(135deg,#16A87A,#0a6b4e);border-radius:var(--radius);padding:18px;margin-bottom:20px;color:#fff}
+.macro-bar-title{font-size:12px;font-weight:600;opacity:.75;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+.macro-bar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mb-item{text-align:center}
+.mb-val{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.mb-lbl{font-size:11px;font-weight:600;opacity:.7;margin-top:2px}
+
+/* DETAIL */
+.detail-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow)}
+.detail-photo{width:100%;height:230px;background:linear-gradient(135deg,#f0f0ea,#e8e8e2);display:flex;align-items:center;justify-content:center;font-size:72px;overflow:hidden}
+.detail-photo img{width:100%;height:100%;object-fit:cover}
+.detail-body{padding:18px}
+.detail-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.detail-title-row h2{font-size:22px;font-weight:700;color:var(--text);line-height:1.2;letter-spacing:-.4px}
+.detail-actions{display:flex;gap:6px;flex-shrink:0;margin-top:2px}
+.tag{display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--green-light);color:var(--green);margin-bottom:16px;letter-spacing:.02em}
+.per-person-label{font-size:12px;font-weight:600;color:var(--text3);margin-bottom:10px;margin-top:-10px;text-transform:uppercase;letter-spacing:.04em}
+.macro-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.macro-c{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.macro-c .v{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.macro-c .l{font-size:10px;font-weight:600;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.servings-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px}
+.servings-row .lbl{flex:1;font-size:14px;font-weight:600;color:var(--text2)}
+.sv-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--card);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--text);transition:all .15s}
+.sv-btn:hover{border-color:var(--green);color:var(--green)}
+.sv-num{font-size:20px;font-weight:700;color:var(--text);min-width:28px;text-align:center}
+
+/* CUSTOM GRAMS */
+.custom-section{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:18px}
+.custom-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:7px;letter-spacing:-.1px}
+.custom-ing-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.custom-ing-row:last-of-type{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.custom-ing-name{flex:1;font-size:14px;font-weight:500;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.custom-ing-g{width:74px;padding:8px 10px;font-size:14px;font-weight:600;border-radius:9px;border:1.5px solid var(--border);background:var(--card);text-align:center;color:var(--text);font-family:inherit}
+.custom-ing-g:focus{outline:none;border-color:var(--green)}
+.custom-ing-lbl{font-size:12px;color:var(--text3);font-weight:600;width:14px}
+.custom-ing-kcal{font-size:12px;font-weight:700;color:var(--red);min-width:58px;text-align:right}
+.custom-total{display:flex;justify-content:space-between;align-items:center;background:var(--green-light);border-radius:10px;margin-top:14px;padding:12px 14px}
+.custom-total .lbl{font-size:13px;font-weight:600;color:var(--green-dark)}
+.custom-total .val{font-size:17px;font-weight:700;color:var(--green-dark)}
+
+.notes-box{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;font-size:14px;color:var(--text2);line-height:1.65;font-weight:400}
+.sec-label{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.stat-c{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow)}
+.stat-c .v{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.stat-c .l{font-size:11px;font-weight:600;color:var(--text3);margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
+.top-list{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:22px;box-shadow:var(--shadow)}
+.top-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.top-item:last-child{border-bottom:none}
+.top-rank{font-size:13px;color:var(--text3);min-width:20px;font-weight:700}
+.top-name{flex:1;font-size:14px;font-weight:500;color:var(--text)}
+.top-val{font-size:14px;font-weight:700}
+
+/* SCAN MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px)}
+@media(min-width:500px){.modal-bg{align-items:center;padding:16px}}
+.modal{background:#fff;border-radius:24px 24px 0 0;padding:28px 24px;width:100%;max-width:500px;box-shadow:var(--shadow-md)}
+@media(min-width:500px){.modal{border-radius:24px}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal h3{font-size:19px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px}
+.modal .sub{font-size:14px;color:var(--text2);margin-bottom:18px;line-height:1.55}
+.scan-drop{border:2px dashed #D4D4CF;border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;position:relative;overflow:hidden;margin-bottom:16px;background:var(--bg);transition:all .15s}
+.scan-drop:hover,.scan-drop:focus-within{border-color:var(--green);background:var(--green-light)}
+.scan-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.scan-drop i{font-size:38px;color:var(--text3);display:block;margin-bottom:10px}
+.scan-drop p{font-size:14px;color:var(--text3);font-weight:500}
+.scan-img-preview{width:100%;max-height:180px;object-fit:contain;border-radius:12px;margin-bottom:14px;display:none}
+.scan-loading{text-align:center;padding:16px;font-size:14px;font-weight:600;color:var(--green);display:none;gap:8px}
+.scan-result-box{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;display:none}
+.scan-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.scan-row:last-child{border-bottom:none}
+.scan-row .k{color:var(--text2);font-weight:500}.scan-row .v{font-weight:700;color:var(--text)}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin .8s linear infinite;display:inline-block}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1><span>🥗</span> FitRecipes</h1>
+    <div class="recipe-count" id="recipe-count">0 ricette</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('list')"><i class="ti ti-books"></i> Ricette</button>
+    <button class="tab" onclick="switchTab('add')"><i class="ti ti-plus"></i> Aggiungi</button>
+    <button class="tab" onclick="switchTab('stats')"><i class="ti ti-chart-bar"></i> Stats</button>
+  </div>
+
+  <!-- ===== LIST ===== -->
+  <div class="view active" id="view-list">
+    <div class="search-wrap"><i class="ti ti-search"></i><input type="search" class="search-input" placeholder="Cerca ricette…" oninput="renderList()"></div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('Tutte',this)">Tutte</button>
+      <button class="filter-btn" onclick="setFilter('Colazione',this)">🍳 Colazione</button>
+      <button class="filter-btn" onclick="setFilter('Pranzo',this)">🥗 Pranzo</button>
+      <button class="filter-btn" onclick="setFilter('Cena',this)">🍽️ Cena</button>
+      <button class="filter-btn" onclick="setFilter('Snack',this)">🥜 Snack</button>
+    </div>
+
+    <div class="cal-box">
+      <div class="cal-box-top">
+        <span class="label"><i class="ti ti-flame" style="color:#E24B4A"></i> Max calorie / persona <span class="cal-badge" id="cal-badge" style="display:none">attivo</span></span>
+        <span class="val" id="cal-range-txt">Tutte</span>
+      </div>
+      <div class="cal-slider-row">
+        <input type="range" id="cal-max" min="100" max="1200" step="25" value="1200" oninput="updateCalFilter()">
+        <span id="cal-max-lbl" style="min-width:64px;text-align:right;font-size:13px;font-weight:600;color:#1a1a1a">1200+ kcal</span>
+      </div>
+      <button class="cal-reset" onclick="resetCalFilter()">↺ Reimposta</button>
+    </div>
+
+    <div class="recipes-grid" id="recipes-grid"></div>
+  </div>
+
+  <!-- ===== ADD ===== -->
+  <div class="view" id="view-add">
+
+    <div class="ai-box">
+      <div class="ai-box-title"><i class="ti ti-sparkles"></i> Crea con l'AI</div>
+      <p class="ai-box-sub">Scrivi o detta la ricetta in linguaggio naturale — l'AI compila tutto da sola: ingredienti, grammi e macro.</p>
+      <div class="ai-input-wrap">
+        <textarea id="ai-prompt" class="ai-textarea" placeholder="Es. Pollo alla griglia 150g con riso basmati 80g e broccoli 100g, per 2 persone…" rows="3"></textarea>
+        <button class="mic-btn" id="mic-btn" onclick="toggleMic()" title="Detta a voce"><i class="ti ti-microphone" id="mic-icon"></i></button>
+      </div>
+      <div class="ai-status" id="ai-status"></div>
+      <button class="btn btn-ai" onclick="generateRecipeAI()" id="ai-generate-btn"><i class="ti ti-wand"></i> Genera ricetta</button>
+    </div>
+
+    <div class="or-divider"><span>oppure inserisci manualmente</span></div>
+
+    <div class="form-block">
+      <label class="form-label">Foto ricetta</label>
+      <div id="photo-drop" class="photo-drop">
+        <input type="file" accept="image/*" onchange="handlePhotoUpload(event)">
+        <i class="ti ti-camera"></i>
+        <p>Tocca per aggiungere una foto</p>
+      </div>
+      <div id="photo-prev" class="photo-preview" style="display:none">
+        <img id="photo-prev-img" src="" alt="">
+        <button class="photo-remove" onclick="removePhoto()"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <label class="form-label">Nome ricetta *</label>
+      <input type="text" class="form-input" id="f-name" placeholder="Es. Bowl di pollo e quinoa">
+    </div>
+
+    <div class="form-row2">
+      <div>
+        <label class="form-label">Categoria</label>
+        <select class="form-input" id="f-cat">
+          <option>Colazione</option><option>Pranzo</option><option selected>Cena</option><option>Snack</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">N° porzioni</label>
+        <input type="number" class="form-input" id="f-servings" value="1" min="1" max="20" oninput="updatePreview()">
+      </div>
+    </div>
+
+    <div class="form-block">
+      <label class="form-label">Emoji (se non hai foto)</label>
+      <input type="text" class="form-input" id="f-emoji" value="🥗" maxlength="2" style="width:70px;text-align:center;font-size:22px">
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span class="sec-label" style="margin:0">Ingredienti</span>
+    </div>
+    <div id="ing-list"></div>
+    <button class="add-ing-btn" onclick="addIng()"><i class="ti ti-plus"></i> Aggiungi ingrediente</button>
+
+    <div class="macro-bar">
+      <div class="macro-bar-title">Anteprima macro per persona</div>
+      <div class="macro-bar-grid">
+        <div class="mb-item"><div class="mb-val" id="prev-cal">0</div><div class="mb-lbl">kcal</div></div>
+        <div class="mb-item"><div class="mb-val" id="prev-p">0g</div><div class="mb-lbl">Proteine</div></div>
+        <div class="mb-item"><div class="mb-val" id="prev-c">0g</div><div class="mb-lbl">Carb</div></div>
+        <div class="mb-item"><div class="mb-val" id="prev-f">0g</div><div class="mb-lbl">Grassi</div></div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <label class="form-label">Note / Preparazione</label>
+      <textarea class="form-input" id="f-notes" placeholder="Es. Griglia il pollo 10 minuti per lato…"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:32px">
+      <button class="btn btn-green" onclick="saveRecipe()"><i class="ti ti-check"></i> Salva</button>
+      <button class="btn btn-outline" onclick="cancelForm()">Annulla</button>
+    </div>
+  </div>
+
+  <!-- ===== STATS ===== -->
+  <div class="view" id="view-stats">
+    <div class="stats-row" id="stats-row"></div>
+    <div class="sec-label">💪 Più proteiche</div>
+    <div class="top-list" id="top-pro"></div>
+    <div class="sec-label">🔥 Meno caloriche</div>
+    <div class="top-list" id="top-cal"></div>
+  </div>
+
+  <!-- ===== DETAIL ===== -->
+  <div class="view" id="view-detail">
+    <button class="btn btn-outline btn-sm" onclick="backToList()" style="margin-bottom:14px"><i class="ti ti-arrow-left"></i> Indietro</button>
+    <div id="detail-content"></div>
+  </div>
+
+</div>
+
+<!-- SCAN MODAL -->
+<div class="modal-bg" id="scan-modal" style="display:none" onclick="closeScanModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <h3>📷 Scansiona etichetta</h3>
+    <p class="sub">Fotografa l'etichetta nutrizionale — l'AI legge kcal, proteine, carboidrati e grassi per 100g automaticamente.</p>
+    <div class="scan-drop" id="scan-drop">
+      <input type="file" accept="image/*" capture="environment" onchange="handleScanUpload(event)">
+      <i class="ti ti-camera"></i>
+      <p>Tocca per scattare o caricare la foto</p>
+    </div>
+    <img class="scan-img-preview" id="scan-prev" src="" alt="">
+    <div class="scan-loading" id="scan-loading" style="display:none;flex-direction:row;align-items:center;justify-content:center"><i class="ti ti-loader spinning"></i> Lettura etichetta…</div>
+    <div class="scan-result-box" id="scan-result">
+      <div class="scan-row"><span class="k">Prodotto</span><span class="v" id="sr-name">—</span></div>
+      <div class="scan-row"><span class="k">Calorie / 100g</span><span class="v" id="sr-kcal">—</span></div>
+      <div class="scan-row"><span class="k">Proteine / 100g</span><span class="v" id="sr-p">—</span></div>
+      <div class="scan-row"><span class="k">Carboidrati / 100g</span><span class="v" id="sr-c">—</span></div>
+      <div class="scan-row"><span class="k">Grassi / 100g</span><span class="v" id="sr-f">—</span></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('scan-modal').style.display='none'">Annulla</button>
+      <button class="btn btn-green btn-sm" id="scan-apply" style="display:none" onclick="applyScan()"><i class="ti ti-check"></i> Usa valori</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB='fit_v3';
+let recipes=[],editId=null,catFilter='Tutte',calMin=0,calMax=1200;
+let ingCounter=0,photoData=null,currentScanIngId=null,scanData=null,curSvgs={},curRecipeId=null;
+
+function load(){try{const d=localStorage.getItem(DB);if(d)recipes=JSON.parse(d);}catch(e){recipes=[];}}
+function persist(){try{localStorage.setItem(DB,JSON.stringify(recipes));}catch(e){}}
+
+load();
+if(!recipes.length) seed();
+renderList();
+
+function seed(){
+  recipes=[
+    {id:1,name:'Pancakes proteici',cat:'Colazione',emoji:'🥞',photo:null,servings:2,notes:'Frulla tutto, cuoci senza olio.',
+      ings:[{n:'Albumi',g:200,k:52,p:11,c:0.7,f:0.2},{n:'Avena',g:60,k:379,p:13,c:66,f:6.5},{n:'Banana',g:80,k:89,p:1.1,c:23,f:0.3}]},
+    {id:2,name:'Bowl pollo e quinoa',cat:'Pranzo',emoji:'🍜',photo:null,servings:1,notes:'Griglia il pollo, servi freddo.',
+      ings:[{n:'Petto di pollo',g:150,k:165,p:31,c:0,f:3.6},{n:'Quinoa cotta',g:120,k:120,p:4.4,c:21,f:1.9},{n:'Spinaci',g:80,k:23,p:2.9,c:3.6,f:0.4},{n:'Avocado',g:50,k:160,p:2,c:9,f:15}]},
+    {id:3,name:'Salmone al forno',cat:'Cena',emoji:'🐟',photo:null,servings:1,notes:'Forno 180° per 20 min.',
+      ings:[{n:'Salmone',g:200,k:208,p:20,c:0,f:13},{n:'Broccoli',g:150,k:34,p:2.8,c:7,f:0.4},{n:'Olio EVO',g:10,k:884,p:0,c:0,f:100}]},
+    {id:4,name:'Yogurt greco con frutti rossi',cat:'Snack',emoji:'🫐',photo:null,servings:1,notes:'Ottimo post-workout.',
+      ings:[{n:'Yogurt greco 0%',g:200,k:57,p:10,c:3.6,f:0.4},{n:'Mirtilli',g:80,k:57,p:0.7,c:14,f:0.3},{n:'Mandorle',g:20,k:579,p:21,c:22,f:50}]}
+  ];
+  persist();
+}
+
+/* ---- MACROS ---- */
+function calcMacros(ings,svgs){
+  let k=0,p=0,c=0,f=0;
+  ings.forEach(i=>{const m=i.g/100;k+=i.k*m;p+=i.p*m;c+=i.c*m;f+=i.f*m;});
+  return{k:Math.round(k/svgs),p:Math.round(p*10/svgs)/10,c:Math.round(c*10/svgs)/10,f:Math.round(f*10/svgs)/10};
+}
+function calcCustom(ings,gmap){
+  let k=0,p=0,c=0,f=0;
+  ings.forEach(i=>{const g=gmap[i.n]??i.g;const m=g/100;k+=i.k*m;p+=i.p*m;c+=i.c*m;f+=i.f*m;});
+  return{k:Math.round(k),p:Math.round(p*10)/10,c:Math.round(c*10)/10,f:Math.round(f*10)/10};
+}
+
+/* ---- TABS ---- */
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['list','add','stats','detail'][i]===t));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const map={list:'view-list',add:'view-add',stats:'view-stats',detail:'view-detail'};
+  document.getElementById(map[t]).classList.add('active');
+  if(t==='list')renderList();
+  if(t==='add'&&!editId)resetForm();
+  if(t==='stats')renderStats();
+}
+
+/* ---- CAT FILTER ---- */
+function setFilter(f,btn){
+  catFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+/* ---- CAL FILTER ---- */
+function updateCalFilter(){
+  const mx=+document.getElementById('cal-max').value;
+  calMax=mx;
+  document.getElementById('cal-max-lbl').textContent=(mx>=1200?'1200+':mx)+' kcal';
+  document.getElementById('cal-range-txt').textContent=mx>=1200?'Tutte':'≤ '+mx+' kcal';
+  document.getElementById('cal-badge').style.display=mx<1200?'inline':'none';
+  renderList();
+}
+function resetCalFilter(){
+  document.getElementById('cal-max').value=1200;
+  calMax=1200;
+  document.getElementById('cal-max-lbl').textContent='1200+ kcal';
+  document.getElementById('cal-range-txt').textContent='Tutte';
+  document.getElementById('cal-badge').style.display='none';
+  renderList();
+}
+
+/* ---- LIST ---- */
+function renderList(){
+  const q=document.getElementById('search-input')?document.querySelector('.search-input').value.toLowerCase():'';
+  const filtered=recipes.filter(r=>{
+    const m=calcMacros(r.ings,r.servings);
+    return(catFilter==='Tutte'||r.cat===catFilter)&&r.name.toLowerCase().includes(q)&&(calMax>=1200||m.k<=calMax);
+  });
+  document.getElementById('recipe-count').textContent=recipes.length+' ricette';
+  const grid=document.getElementById('recipes-grid');
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty"><i class="ti ti-salad"></i><p>Nessuna ricetta trovata</p><button class="btn btn-green" onclick="switchTab('add')"><i class="ti ti-plus"></i> Aggiungi</button></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(r=>{
+    const m=calcMacros(r.ings,r.servings);
+    const ph=r.photo?`<div class="card-photo"><img src="${r.photo}" alt=""></div>`:`<div class="card-photo">${r.emoji}</div>`;
+    return`<div class="recipe-card" onclick="showDetail(${r.id})">${ph}<div class="card-body"><div class="card-name">${r.name}</div><div class="card-sub">${r.cat} · per persona</div><div class="macros"><div class="mpill p-cal"><span class="mv">${m.k}</span><span class="ml">kcal</span></div><div class="mpill p-pro"><span class="mv">${m.p}g</span><span class="ml">Pro</span></div><div class="mpill p-car"><span class="mv">${m.c}g</span><span class="ml">Carb</span></div><div class="mpill p-fat"><span class="mv">${m.f}g</span><span class="ml">Gras</span></div></div></div></div>`;
+  }).join('');
+}
+
+/* ---- DETAIL ---- */
+function showDetail(id){
+  curRecipeId=id;
+  const r=recipes.find(x=>x.id===id);if(!r)return;
+  r._viewSvgs=1;
+  curSvgs={};
+  // init with per-person grams (original grams / servings)
+  r.ings.forEach(i=>{curSvgs[i.n]=Math.round(i.g/r.servings*10)/10;});
+  document.getElementById('view-list').classList.remove('active');
+  document.getElementById('view-detail').classList.add('active');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',i===3));
+  renderDetail(r);
+}
+
+function perPersonMacros(r){
+  // always: total grams / servings => per 1 person
+  let k=0,p=0,c=0,f=0;
+  r.ings.forEach(i=>{const m=(i.g/r.servings)/100;k+=i.k*m;p+=i.p*m;c+=i.c*m;f+=i.f*m;});
+  return{k:Math.round(k),p:Math.round(p*10)/10,c:Math.round(c*10)/10,f:Math.round(f*10)/10};
+}
+
+function customTotalMacros(r){
+  // sum from curSvgs (which holds scaled grams for N people)
+  let k=0,p=0,c=0,f=0;
+  r.ings.forEach(i=>{const g=curSvgs[i.n]??0;const m=g/100;k+=i.k*m;p+=i.p*m;c+=i.c*m;f+=i.f*m;});
+  return{k:Math.round(k),p:Math.round(p*10)/10,c:Math.round(c*10)/10,f:Math.round(f*10)/10};
+}
+
+function renderDetail(r){
+  const vp=r._viewSvgs??1;
+  const mp=perPersonMacros(r);          // FIXED: never changes
+  const mt=customTotalMacros(r);        // total for N people (custom section)
+  const ph=r.photo?`<div class="detail-photo"><img src="${r.photo}" alt=""></div>`:`<div class="detail-photo">${r.emoji}</div>`;
+  const ingRows=r.ings.map(i=>{
+    const g=curSvgs[i.n]??Math.round(i.g/r.servings*10)/10;
+    const ik=Math.round(i.k*g/100);
+    const safe=i.n.replace(/[^a-z0-9]/gi,'_');
+    return`<div class="custom-ing-row">
+      <span class="custom-ing-name">${i.n}</span>
+      <input class="custom-ing-g" type="number" min="0" value="${g}" oninput="updateGram('${r.id}','${i.n}',this.value)" id="cg_${safe}">
+      <span class="custom-ing-lbl">g</span>
+      <span class="custom-ing-kcal" id="ck_${safe}">${ik} kcal</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('detail-content').innerHTML=`
+    <div class="detail-card">
+      ${ph}
+      <div class="detail-body">
+        <div class="detail-title-row">
+          <h2>${r.name}</h2>
+          <div class="detail-actions">
+            <button class="btn-icon" onclick="editRecipe(${r.id})"><i class="ti ti-edit"></i></button>
+            <button class="btn-icon danger" onclick="deleteRecipe(${r.id})"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+        <div class="tag">${r.cat}</div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:10px;margin-top:-6px">Valori per 1 persona — non cambiano mai</div>
+        <div class="macro-cards">
+          <div class="macro-c"><div class="v">${mp.k}</div><div class="l">kcal</div></div>
+          <div class="macro-c"><div class="v">${mp.p}g</div><div class="l">Proteine</div></div>
+          <div class="macro-c"><div class="v">${mp.c}g</div><div class="l">Carb</div></div>
+          <div class="macro-c"><div class="v">${mp.f}g</div><div class="l">Grassi</div></div>
+        </div>
+        <div class="servings-row">
+          <span class="lbl">Persone da preparare</span>
+          <button class="sv-btn" onclick="changeSvgs(${r.id},-1)">−</button>
+          <span class="sv-num" id="sv-n">${vp}</span>
+          <button class="sv-btn" onclick="changeSvgs(${r.id},1)">+</button>
+        </div>
+        <div class="custom-section">
+          <div class="custom-title"><i class="ti ti-adjustments-horizontal" style="color:#1D9E75"></i> Grammi totali da cucinare (per ${vp} pers.)</div>
+          ${ingRows}
+          <div class="custom-total"><span class="lbl">Totale calorie (${vp} pers.)</span><span class="val" id="d-tot">${mt.k} kcal</span></div>
+        </div>
+        ${r.notes?`<div class="sec-label" style="margin-top:0">Preparazione</div><div class="notes-box">${r.notes}</div>`:''}
+      </div>
+    </div>`;
+}
+
+function updateGram(rid,name,val){
+  const r=recipes.find(x=>x.id==rid);if(!r)return;
+  const g=parseFloat(val)||0;curSvgs[name]=g;
+  const ing=r.ings.find(i=>i.n===name);
+  if(ing){const safe=name.replace(/[^a-z0-9]/gi,'_');const el=document.getElementById('ck_'+safe);if(el)el.textContent=Math.round(ing.k*g/100)+' kcal';}
+  // update only the TOTAL (not per-person macro cards)
+  const mt=customTotalMacros(r);
+  const tot=document.getElementById('d-tot');if(tot)tot.textContent=mt.k+' kcal';
+}
+
+function changeSvgs(id,delta){
+  const r=recipes.find(x=>x.id===id);if(!r)return;
+  const cur=r._viewSvgs??1;
+  r._viewSvgs=Math.max(1,cur+delta);
+  // scale grams by number of people, but per-person macros stay fixed
+  const ratio=r._viewSvgs;
+  r.ings.forEach(i=>{curSvgs[i.n]=Math.round((i.g/r.servings)*ratio*10)/10;});
+  renderDetail(r);
+}
+
+function backToList(){
+  const r=recipes.find(x=>x.id===curRecipeId);
+  if(r)delete r._viewSvgs;
+  document.getElementById('view-detail').classList.remove('active');
+  document.getElementById('view-list').classList.add('active');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderList();
+}
+
+function editRecipe(id){
+  const r=recipes.find(x=>x.id===id);if(!r)return;
+  editId=id;photoData=r.photo||null;
+  document.getElementById('f-name').value=r.name;
+  document.getElementById('f-cat').value=r.cat;
+  document.getElementById('f-servings').value=r.servings;
+  document.getElementById('f-emoji').value=r.emoji;
+  document.getElementById('f-notes').value=r.notes||'';
+  if(r.photo){document.getElementById('photo-drop').style.display='none';document.getElementById('photo-prev').style.display='block';document.getElementById('photo-prev-img').src=r.photo;}
+  else{document.getElementById('photo-drop').style.display='block';document.getElementById('photo-prev').style.display='none';}
+  document.getElementById('ing-list').innerHTML='';ingCounter=0;
+  r.ings.forEach(i=>addIng(i));
+  updatePreview();
+  switchTab('add');
+}
+
+function deleteRecipe(id){
+  if(!confirm('Eliminare questa ricetta?'))return;
+  recipes=recipes.filter(r=>r.id!==id);persist();backToList();
+}
+
+/* ---- FORM ---- */
+function addIng(data=null){
+  ingCounter++;
+  const id='ing'+ingCounter;
+  const div=document.createElement('div');
+  div.className='ing-card';div.id=id;
+  div.innerHTML=`
+    <button class="ing-remove" onclick="removeIng('${id}')"><i class="ti ti-x"></i></button>
+    <div class="ing-card-top">
+      <input type="text" placeholder="Nome ingrediente" value="${data?data.n:''}" oninput="updatePreview()">
+    </div>
+    <div class="ing-macros">
+      <div class="ing-field"><label>Grammi usati</label><input type="number" placeholder="es. 150" value="${data?data.g:''}" min="0" oninput="updatePreview()"></div>
+      <div class="ing-field"><label>Kcal per 100g</label><input type="number" placeholder="es. 165" value="${data?data.k:''}" min="0" step="0.1" oninput="updatePreview()"></div>
+      <div class="ing-field"><label>Proteine / 100g</label><input type="number" placeholder="es. 31" value="${data?data.p:''}" min="0" step="0.1" oninput="updatePreview()"></div>
+      <div class="ing-field"><label>Carboidrati / 100g</label><input type="number" placeholder="es. 0" value="${data?data.c:''}" min="0" step="0.1" oninput="updatePreview()"></div>
+      <div class="ing-field"><label>Grassi / 100g</label><input type="number" placeholder="es. 3.6" value="${data?data.f:''}" min="0" step="0.1" oninput="updatePreview()"></div>
+      <div class="ing-field" style="justify-content:flex-end;align-items:flex-end">
+        <button class="scan-btn" onclick="openScan('${id}')"><i class="ti ti-camera"></i> Scansiona etichetta</button>
+      </div>
+    </div>`;
+  document.getElementById('ing-list').appendChild(div);
+  updatePreview();
+}
+
+function removeIng(id){document.getElementById(id)?.remove();updatePreview();}
+
+function getIngs(){
+  const rows=document.querySelectorAll('#ing-list .ing-card');
+  const res=[];
+  rows.forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    const n=inputs[0].value.trim();
+    const g=parseFloat(inputs[1].value)||0;
+    if(n&&g>0)res.push({n,g,k:parseFloat(inputs[2].value)||0,p:parseFloat(inputs[3].value)||0,c:parseFloat(inputs[4].value)||0,f:parseFloat(inputs[5].value)||0});
+  });
+  return res;
+}
+
+function updatePreview(){
+  const ings=getIngs();
+  const s=parseInt(document.getElementById('f-servings').value)||1;
+  if(!ings.length){document.getElementById('prev-cal').textContent='0';['p','c','f'].forEach(x=>document.getElementById('prev-'+x).textContent='0g');return;}
+  const m=calcMacros(ings,s);
+  document.getElementById('prev-cal').textContent=m.k;
+  document.getElementById('prev-p').textContent=m.p+'g';
+  document.getElementById('prev-c').textContent=m.c+'g';
+  document.getElementById('prev-f').textContent=m.f+'g';
+}
+
+function saveRecipe(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('Inserisci il nome della ricetta');return;}
+  const ings=getIngs();
+  if(!ings.length){alert('Aggiungi almeno un ingrediente');return;}
+  const r={
+    id:editId||Date.now(),name,
+    cat:document.getElementById('f-cat').value,
+    emoji:document.getElementById('f-emoji').value||'🥗',
+    photo:photoData||null,
+    servings:parseInt(document.getElementById('f-servings').value)||1,
+    ings,notes:document.getElementById('f-notes').value.trim()
+  };
+  if(editId)recipes=recipes.map(x=>x.id===editId?r:x);
+  else recipes.push(r);
+  persist();resetForm();switchTab('list');
+}
+
+function resetForm(){
+  editId=null;ingCounter=0;photoData=null;
+  document.getElementById('f-name').value='';
+  document.getElementById('f-cat').value='Cena';
+  document.getElementById('f-servings').value='1';
+  document.getElementById('f-emoji').value='🥗';
+  document.getElementById('f-notes').value='';
+  document.getElementById('ing-list').innerHTML='';
+  document.getElementById('photo-drop').style.display='block';
+  document.getElementById('photo-prev').style.display='none';
+  document.getElementById('photo-prev-img').src='';
+  updatePreview();
+}
+
+function cancelForm(){editId=null;switchTab('list');}
+
+/* ---- PHOTO ---- */
+function handlePhotoUpload(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{photoData=ev.target.result;document.getElementById('photo-drop').style.display='none';document.getElementById('photo-prev').style.display='block';document.getElementById('photo-prev-img').src=photoData;};
+  r.readAsDataURL(f);
+}
+function removePhoto(){photoData=null;document.getElementById('photo-drop').style.display='block';document.getElementById('photo-prev').style.display='none';document.getElementById('photo-prev-img').src='';}
+
+/* ---- AI RECIPE GENERATION ---- */
+let recognition=null,isRecording=false;
+
+function setupSpeechRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return null;
+  const r=new SR();
+  r.lang='it-IT';
+  r.continuous=true;
+  r.interimResults=true;
+  return r;
+}
+
+function toggleMic(){
+  if(!recognition)recognition=setupSpeechRecognition();
+  if(!recognition){
+    alert('Il riconoscimento vocale non è supportato su questo browser. Prova con Chrome o Safari su iPhone.');
+    return;
+  }
+  const micBtn=document.getElementById('mic-btn');
+  const micIcon=document.getElementById('mic-icon');
+  const textarea=document.getElementById('ai-prompt');
+
+  if(isRecording){
+    recognition.stop();
+    isRecording=false;
+    micBtn.classList.remove('recording');
+    micIcon.className='ti ti-microphone';
+    return;
+  }
+
+  let baseText=textarea.value?textarea.value+' ':'';
+  recognition.onresult=function(e){
+    let transcript='';
+    for(let i=0;i<e.results.length;i++){transcript+=e.results[i][0].transcript;}
+    textarea.value=baseText+transcript;
+  };
+  recognition.onerror=function(){
+    isRecording=false;
+    micBtn.classList.remove('recording');
+    micIcon.className='ti ti-microphone';
+  };
+  recognition.onend=function(){
+    isRecording=false;
+    micBtn.classList.remove('recording');
+    micIcon.className='ti ti-microphone';
+  };
+  recognition.start();
+  isRecording=true;
+  micBtn.classList.add('recording');
+  micIcon.className='ti ti-player-stop-filled';
+}
+
+async function generateRecipeAI(){
+  const prompt=document.getElementById('ai-prompt').value.trim();
+  if(!prompt){alert('Scrivi o detta prima la ricetta');return;}
+  const statusEl=document.getElementById('ai-status');
+  const btn=document.getElementById('ai-generate-btn');
+  statusEl.style.display='flex';
+  statusEl.innerHTML='<i class="ti ti-loader spinning"></i> Sto creando la ricetta…';
+  btn.disabled=true;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,messages:[{role:'user',content:[
+        {type:'text',text:`Sei un esperto di nutrizione. L'utente descrive una ricetta fitness in linguaggio naturale. Estrai una ricetta strutturata, stimando i valori nutrizionali per 100g di ogni ingrediente in base alla tua conoscenza nutrizionale (es. petto di pollo crudo ~165kcal/100g, riso basmati crudo ~360kcal/100g, ecc). Se l'utente specifica i grammi usali, altrimenti stima una quantità ragionevole per porzione.
+
+Rispondi SOLO con JSON puro, nessun markdown, in questo formato esatto:
+{"name":"nome ricetta breve","cat":"Colazione|Pranzo|Cena|Snack","emoji":"un emoji adatto","servings":1,"notes":"breve preparazione in 1-2 frasi, o stringa vuota","ingredients":[{"n":"nome ingrediente","g":150,"k":165,"p":31,"c":0,"f":3.6}]}
+
+Descrizione utente: "${prompt}"`}
+      ]}]})
+    });
+    const data=await res.json();
+    const txt=(data.content||[]).map(b=>b.text||'').join('').trim();
+    let parsed;
+    try{parsed=JSON.parse(txt);}catch(_){const m=txt.match(/\{[\s\S]*\}/);if(m)parsed=JSON.parse(m[0]);else throw new Error('parse failed');}
+
+    // populate form
+    document.getElementById('f-name').value=parsed.name||'';
+    document.getElementById('f-cat').value=parsed.cat||'Cena';
+    document.getElementById('f-servings').value=parsed.servings||1;
+    document.getElementById('f-emoji').value=parsed.emoji||'🥗';
+    document.getElementById('f-notes').value=parsed.notes||'';
+    document.getElementById('ing-list').innerHTML='';ingCounter=0;
+    (parsed.ingredients||[]).forEach(ing=>addIng(ing));
+    updatePreview();
+
+    statusEl.innerHTML='<i class="ti ti-check"></i> Ricetta generata! Controlla i valori qui sotto e salva.';
+    setTimeout(()=>{statusEl.style.display='none';},4000);
+    document.getElementById('ai-prompt').value='';
+  }catch(err){
+    statusEl.innerHTML='<i class="ti ti-alert-circle"></i> Non sono riuscito a generare la ricetta. Riprova con una descrizione più chiara.';
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+/* ---- SCAN ---- */
+function openScan(ingId){
+  currentScanIngId=ingId;scanData=null;
+  document.getElementById('scan-modal').style.display='flex';
+  document.getElementById('scan-drop').style.display='block';
+  document.getElementById('scan-prev').style.display='none';
+  document.getElementById('scan-loading').style.display='none';
+  document.getElementById('scan-result').style.display='none';
+  document.getElementById('scan-apply').style.display='none';
+  const inp=document.querySelector('#scan-drop input');if(inp)inp.value='';
+}
+
+function closeScanModal(e){
+  if(e&&e.target!==document.getElementById('scan-modal'))return;
+  document.getElementById('scan-modal').style.display='none';
+}
+
+async function handleScanUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(ev){
+    const b64=ev.target.result.split(',')[1];
+    const mime=file.type||'image/jpeg';
+    document.getElementById('scan-prev').src=ev.target.result;
+    document.getElementById('scan-prev').style.display='block';
+    document.getElementById('scan-drop').style.display='none';
+    document.getElementById('scan-loading').style.display='block';
+    document.getElementById('scan-result').style.display='none';
+    document.getElementById('scan-apply').style.display='none';
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mime,data:b64}},
+          {type:'text',text:'Questa è un\'etichetta nutrizionale. Estrai i valori per 100g o 100ml. Rispondi SOLO con JSON puro (niente markdown):\n{"name":"nome","kcal_100":0,"p_100":0,"c_100":0,"f_100":0}\nSe un valore non è leggibile usa null.'}
+        ]}]})
+      });
+      const data=await res.json();
+      const txt=(data.content||[]).map(b=>b.text||'').join('').trim();
+      let parsed;try{parsed=JSON.parse(txt);}catch(_){const m=txt.match(/\{[\s\S]*?\}/);if(m)parsed=JSON.parse(m[0]);else throw new Error();}
+      scanData=parsed;
+      document.getElementById('scan-loading').style.display='none';
+      document.getElementById('scan-result').style.display='block';
+      document.getElementById('scan-apply').style.display='inline-flex';
+      document.getElementById('sr-name').textContent=parsed.name||'—';
+      document.getElementById('sr-kcal').textContent=parsed.kcal_100!=null?parsed.kcal_100+' kcal':'non rilevato';
+      document.getElementById('sr-p').textContent=parsed.p_100!=null?parsed.p_100+'g':'non rilevato';
+      document.getElementById('sr-c').textContent=parsed.c_100!=null?parsed.c_100+'g':'non rilevato';
+      document.getElementById('sr-f').textContent=parsed.f_100!=null?parsed.f_100+'g':'non rilevato';
+    }catch(err){
+      document.getElementById('scan-loading').style.display='none';
+      document.getElementById('scan-result').style.display='block';
+      document.getElementById('scan-result').innerHTML='<p style="color:#E24B4A;font-size:14px">Non riesco a leggere l\'etichetta. Prova con una foto più nitida e luminosa, con testo ben visibile.</p>';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyScan(){
+  if(!scanData||!currentScanIngId)return;
+  const row=document.getElementById(currentScanIngId);if(!row)return;
+  const inputs=row.querySelectorAll('input');
+  if(scanData.name&&!inputs[0].value)inputs[0].value=scanData.name;
+  if(scanData.kcal_100!=null)inputs[2].value=scanData.kcal_100;
+  if(scanData.p_100!=null)inputs[3].value=scanData.p_100;
+  if(scanData.c_100!=null)inputs[4].value=scanData.c_100;
+  if(scanData.f_100!=null)inputs[5].value=scanData.f_100;
+  updatePreview();
+  document.getElementById('scan-modal').style.display='none';
+}
+
+/* ---- STATS ---- */
+function renderStats(){
+  if(!recipes.length){
+    document.getElementById('stats-row').innerHTML='<div style="grid-column:1/-1;text-align:center;color:#888;padding:2rem">Nessuna ricetta</div>';
+    document.getElementById('top-pro').innerHTML='';document.getElementById('top-cal').innerHTML='';return;
+  }
+  const all=recipes.map(r=>({...r,...calcMacros(r.ings,r.servings)}));
+  const avg=v=>Math.round(all.reduce((a,r)=>a+r[v],0)/all.length*10)/10;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-c"><div class="v">${recipes.length}</div><div class="l">Ricette</div></div>
+    <div class="stat-c"><div class="v">${Math.round(avg('k'))}</div><div class="l">kcal medie</div></div>
+    <div class="stat-c"><div class="v">${avg('p')}g</div><div class="l">Proteine medie</div></div>`;
+  document.getElementById('top-pro').innerHTML=[...all].sort((a,b)=>b.p-a.p).slice(0,4).map((r,i)=>`<div class="top-item"><span class="top-rank">${i+1}</span><span class="top-name">${r.emoji} ${r.name}</span><span class="top-val" style="color:#0F6E56">${r.p}g</span></div>`).join('');
+  document.getElementById('top-cal').innerHTML=[...all].sort((a,b)=>a.k-b.k).slice(0,4).map((r,i)=>`<div class="top-item"><span class="top-rank">${i+1}</span><span class="top-name">${r.emoji} ${r.name}</span><span class="top-val" style="color:#993C1D">${r.k} kcal</span></div>`).join('');
+}
+</script>
+</body>
+</html>
